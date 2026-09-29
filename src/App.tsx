@@ -1,11 +1,10 @@
 import 'leaflet/dist/leaflet.css';
-import LeafletMap from './components/Map.tsx';
-import PekaumanOfflineMap from './components/PekaumanOfflineMap.tsx';
+import PekaumanVillageMap from './components/PekaumanVillageMap.tsx';
 
 function App() {
   return (
     <>
-      <PekaumanOfflineMap />
+      <PekaumanVillageMap />
     </>
   )
 }
