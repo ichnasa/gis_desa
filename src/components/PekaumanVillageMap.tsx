@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import type { GisLocation, GisDrawMode } from "../types/gis";
 
-// Fix default icons
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
@@ -42,9 +42,54 @@ const WORLD_OUTER_RING: [number, number][] = [
   [90, -180],
 ];
 
-export default function PekaumanVillageMap() {
+function createSimpleMarker() {
+  return L.divIcon({
+    className: "monochrome-gis-marker",
+    html: `
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%);">
+        <div style="
+          background-color: #FFFFFF;
+          border: 2px solid #171717;
+          width: 28px;
+          height: 28px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <span style="transform: rotate(45deg); font-size: 11px;">📍</span>
+        </div>
+      </div>
+    `,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+    popupAnchor: [0, -32],
+  });
+}
+
+export interface PekaumanVillageMapProps {
+  locations?: GisLocation[];
+  selectedLocation?: GisLocation | null;
+  activeDrawMode?: GisDrawMode;
+  onAddLocation?: (loc: GisLocation) => void;
+  onSelectLocation?: (loc: GisLocation | null) => void;
+  onRequestNewPoint?: (coords: { lat: number; lng: number }) => void;
+  onModeChange?: (mode: GisDrawMode) => void;
+}
+
+export default function PekaumanVillageMap({
+  locations = [],
+  selectedLocation,
+  activeDrawMode = "select",
+  onSelectLocation,
+  onRequestNewPoint,
+  onModeChange,
+}: PekaumanVillageMapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerGroupRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -85,11 +130,61 @@ export default function PekaumanVillageMap() {
       dashArray: "6, 6",
     }).addTo(map);
 
+    const markersGroup = L.layerGroup().addTo(map);
+    markersLayerGroupRef.current = markersGroup;
+
     return () => {
       map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const markersGroup = markersLayerGroupRef.current;
+    if (!markersGroup) return;
+    markersGroup.clearLayers();
+
+    locations.forEach((loc) => {
+      const pinIcon = createSimpleMarker();
+      const marker = L.marker([loc.lat, loc.lng], { icon: pinIcon });
+      marker.on("click", () => {
+        if (onSelectLocation) onSelectLocation(loc);
+      });
+      markersGroup.addLayer(marker);
+    });
+  }, [locations, onSelectLocation]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !selectedLocation) return;
+    map.flyTo([selectedLocation.lat, selectedLocation.lng], 19, { duration: 1.0 });
+  }, [selectedLocation]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const container = mapContainerRef.current;
+    if (!map || !container) return;
+
+    if (activeDrawMode === "marker") {
+      container.style.cursor = "crosshair";
+    } else {
+      container.style.cursor = "";
+    }
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+      if (activeDrawMode === "marker") {
+        if (onRequestNewPoint) {
+          onRequestNewPoint({ lat: e.latlng.lat, lng: e.latlng.lng });
+        }
+        if (onModeChange) onModeChange("select");
+      }
+    };
+
+    map.on("click", handleMapClick);
+    return () => {
+      map.off("click", handleMapClick);
+    };
+  }, [activeDrawMode, onRequestNewPoint, onModeChange]);
 
   return (
     <div className="relative w-full h-full flex-1 overflow-hidden select-none bg-[#F5F5F5]">
