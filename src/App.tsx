@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import Sidebar, { type SidebarTab } from "./components/Sidebar";
 import PekaumanVillageMap, { KANTOR_DESA } from "./components/PekaumanVillageMap";
 import FloatingBar from "./components/FloatingBar";
 import CrudSidebar, { INITIAL_LOCATIONS } from "./components/CrudSidebar";
 import NewPointModal from "./components/NewPointModal";
-import type { GisLocation, GisDrawMode } from "./types/gis";
+import type { GisLocation, GisDrawMode, LayerVisibility, DrawingStyle } from "./types/gis";
 
 function App() {
   const [locations, setLocations] = useState<GisLocation[]>(INITIAL_LOCATIONS);
@@ -14,6 +14,35 @@ function App() {
   const [activeDrawMode, setActiveDrawMode] = useState<GisDrawMode>("select");
   const [editingLocation, setEditingLocation] = useState<GisLocation | null>(null);
   const [newPointModalCoords, setNewPointModalCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const [drawingState, setDrawingState] = useState<{
+    isDrawing: boolean;
+    pointCount: number;
+    measuredResult: string | null;
+  }>({
+    isDrawing: false,
+    pointCount: 0,
+    measuredResult: null,
+  });
+
+  const [drawingStyle, setDrawingStyle] = useState<DrawingStyle>({
+    strokeColor: "#FFFFFF",
+    fillColor: "#FFFFFF",
+    fillOpacity: 0.3,
+    strokeWeight: 2.5,
+  });
+
+  const [layerVisibility] = useState<LayerVisibility>({
+    satelliteLayer: true,
+    villageBoundary: true,
+    maskOverlay: true,
+    pointMarkers: true,
+    labels: true,
+  });
+
+  const finishDrawingRef = useRef<(() => void) | null>(null);
+  const undoPointRef = useRef<(() => void) | null>(null);
+  const clearAllRef = useRef<(() => void) | null>(null);
 
   const handleAddLocation = (newLoc: GisLocation) => {
     setLocations((prev) => [newLoc, ...prev]);
@@ -67,6 +96,8 @@ function App() {
           locations={locations}
           selectedLocation={selectedLocation}
           activeDrawMode={activeDrawMode}
+          layerVisibility={layerVisibility}
+          drawingStyle={drawingStyle}
           onAddLocation={handleAddLocation}
           onDeleteLocation={handleDeleteLocation}
           onSelectLocation={(loc) => setSelectedLocation(loc)}
@@ -76,11 +107,27 @@ function App() {
           }}
           onRequestNewPoint={(coords) => setNewPointModalCoords(coords)}
           onModeChange={(mode) => setActiveDrawMode(mode)}
+          onDrawingStateChange={(state) => setDrawingState(state)}
+          finishDrawingRef={finishDrawingRef}
+          undoPointRef={undoPointRef}
+          clearAllRef={clearAllRef}
         />
 
         <FloatingBar
           activeMode={activeDrawMode}
           onChangeMode={(mode) => setActiveDrawMode(mode)}
+          isDrawing={drawingState.isDrawing}
+          pointCount={drawingState.pointCount}
+          measuredResult={drawingState.measuredResult}
+          drawingStyle={drawingStyle}
+          onUpdateDrawingStyle={(style) => setDrawingStyle(style)}
+          onFinishDrawing={() => finishDrawingRef.current?.()}
+          onUndoPoint={() => undoPointRef.current?.()}
+          onCancelDrawing={() => {
+            setActiveDrawMode("select");
+            setDrawingState({ isDrawing: false, pointCount: 0, measuredResult: null });
+          }}
+          onClearAll={() => clearAllRef.current?.()}
         />
       </main>
 
