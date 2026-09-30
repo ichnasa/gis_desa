@@ -76,6 +76,7 @@ export interface PekaumanVillageMapProps {
   onAddLocation?: (loc: GisLocation) => void;
   onDeleteLocation?: (id: string) => void;
   onSelectLocation?: (loc: GisLocation | null) => void;
+  onStartEditLocation?: (loc: GisLocation) => void;
   onRequestNewPoint?: (coords: { lat: number; lng: number }) => void;
   onModeChange?: (mode: GisDrawMode) => void;
 }
@@ -86,6 +87,7 @@ export default function PekaumanVillageMap({
   activeDrawMode = "select",
   onDeleteLocation,
   onSelectLocation,
+  onStartEditLocation,
   onRequestNewPoint,
   onModeChange,
 }: PekaumanVillageMapProps) {
@@ -155,6 +157,10 @@ export default function PekaumanVillageMap({
         } else {
           if (onSelectLocation) onSelectLocation(loc);
         }
+      });
+      marker.on("dblclick", (e) => {
+        L.DomEvent.stop(e);
+        if (onStartEditLocation) onStartEditLocation(loc);
       });
       markersGroup.addLayer(marker);
     });

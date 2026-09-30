@@ -12,6 +12,7 @@ function App() {
   const [selectedLocation, setSelectedLocation] = useState<GisLocation | null>(null);
   const [navTab, setNavTab] = useState<SidebarTab>("map");
   const [activeDrawMode, setActiveDrawMode] = useState<GisDrawMode>("select");
+  const [editingLocation, setEditingLocation] = useState<GisLocation | null>(null);
   const [newPointModalCoords, setNewPointModalCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const handleAddLocation = (newLoc: GisLocation) => {
@@ -19,10 +20,21 @@ function App() {
     setSelectedLocation(newLoc);
   };
 
+  const handleUpdateLocation = (updated: GisLocation) => {
+    setLocations((prev) => prev.map((loc) => (loc.id === updated.id ? updated : loc)));
+    if (selectedLocation?.id === updated.id) {
+      setSelectedLocation(updated);
+    }
+    setEditingLocation(null);
+  };
+
   const handleDeleteLocation = (id: string) => {
     setLocations((prev) => prev.filter((loc) => loc.id !== id));
     if (selectedLocation?.id === id) {
       setSelectedLocation(null);
+    }
+    if (editingLocation?.id === id) {
+      setEditingLocation(null);
     }
   };
 
@@ -32,7 +44,10 @@ function App() {
     <div className="flex flex-row h-screen w-screen overflow-hidden bg-[#F5F5F5] text-[#171717] font-sans antialiased">
       <Sidebar
         activeTab={navTab}
-        onSelectTab={(tab) => setNavTab(tab)}
+        onSelectTab={(tab) => {
+          if (tab !== "add") setEditingLocation(null);
+          setNavTab(tab);
+        }}
         locationCount={locations.length}
         onResetMap={() => {
           setSelectedLocation({
@@ -55,6 +70,10 @@ function App() {
           onAddLocation={handleAddLocation}
           onDeleteLocation={handleDeleteLocation}
           onSelectLocation={(loc) => setSelectedLocation(loc)}
+          onStartEditLocation={(loc) => {
+            setEditingLocation(loc);
+            setNavTab("add");
+          }}
           onRequestNewPoint={(coords) => setNewPointModalCoords(coords)}
           onModeChange={(mode) => setActiveDrawMode(mode)}
         />
@@ -70,13 +89,22 @@ function App() {
           locations={locations}
           onSelectLocation={(loc) => setSelectedLocation(loc)}
           onAddLocation={handleAddLocation}
+          onUpdateLocation={handleUpdateLocation}
           onDeleteLocation={handleDeleteLocation}
+          editingLocation={editingLocation}
+          onCancelEdit={() => setEditingLocation(null)}
           activeTab={navTab === "add" ? "form" : "list"}
           onChangeTab={(tab) => {
             if (tab === "form") setNavTab("add");
-            else setNavTab("data");
+            else {
+              setEditingLocation(null);
+              setNavTab("data");
+            }
           }}
-          onClose={() => setNavTab("map")}
+          onClose={() => {
+            setEditingLocation(null);
+            setNavTab("map");
+          }}
         />
       )}
 
