@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
 import Sidebar, { type SidebarTab } from "./components/Sidebar";
 import PekaumanVillageMap, { KANTOR_DESA } from "./components/PekaumanVillageMap";
 import FloatingBar from "./components/FloatingBar";
 import CrudSidebar, { INITIAL_LOCATIONS } from "./components/CrudSidebar";
+import SettingsModal from "./components/SettingsModal";
 import NewPointModal from "./components/NewPointModal";
 import type { GisLocation, GisDrawMode, LayerVisibility, DrawingStyle } from "./types/gis";
 
@@ -14,6 +15,30 @@ function App() {
   const [activeDrawMode, setActiveDrawMode] = useState<GisDrawMode>("select");
   const [editingLocation, setEditingLocation] = useState<GisLocation | null>(null);
   const [newPointModalCoords, setNewPointModalCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const [fontScale, setFontScale] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem("gis_font_scale");
+      if (saved) {
+        const parsed = parseFloat(saved);
+        if (!isNaN(parsed) && parsed >= 0.8 && parsed <= 1.5) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return 1.0;
+  });
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontScale * 100}%`;
+    try {
+      localStorage.setItem("gis_font_scale", fontScale.toString());
+    } catch {
+      // ignore
+    }
+  }, [fontScale]);
 
   const [drawingState, setDrawingState] = useState<{
     isDrawing: boolean;
@@ -163,6 +188,13 @@ function App() {
           handleAddLocation(newLoc);
           setNewPointModalCoords(null);
         }}
+      />
+
+      <SettingsModal
+        isOpen={navTab === "settings"}
+        onClose={() => setNavTab("map")}
+        fontScale={fontScale}
+        onFontScaleChange={(scale) => setFontScale(scale)}
       />
     </div>
   );
