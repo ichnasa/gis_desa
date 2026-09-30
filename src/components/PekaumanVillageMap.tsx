@@ -7,18 +7,19 @@ import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
+const defaultIconProto = L.Icon.Default.prototype;
+if ("_getIconUrl" in defaultIconProto) {
+  Reflect.deleteProperty(defaultIconProto, "_getIconUrl");
+}
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
   iconUrl,
   shadowUrl,
 });
 
-// Titik Kantor Desa Pekauman Ulu
-const KANTOR_DESA: [number, number] = [-3.397991, 114.844238];
+export const KANTOR_DESA: [number, number] = [-3.397991, 114.844238];
 
-// Batas wilayah Desa Pekauman Ulu (format Leaflet: [latitude, longitude])
-const VILLAGE_BOUNDARY: [number, number][] = [
+export const VILLAGE_BOUNDARY: [number, number][] = [
   [-3.3952, 114.8428],
   [-3.3956, 114.8445],
   [-3.3965, 114.8458],
@@ -31,10 +32,9 @@ const VILLAGE_BOUNDARY: [number, number][] = [
   [-3.3988, 114.8423],
   [-3.3975, 114.8418],
   [-3.3962, 114.8420],
-  [-3.3952, 114.8428], // Kembali ke titik awal
+  [-3.3952, 114.8428],
 ];
 
-// Lingkar terluar dunia untuk membuat efek "lubang donat" (masking)
 const WORLD_OUTER_RING: [number, number][] = [
   [-90, -180],
   [-90, 180],
@@ -49,46 +49,41 @@ export default function PekaumanVillageMap() {
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    // 1. Inisialisasi peta berpusat di Kantor Desa
+    const tileBounds = L.latLngBounds([-3.425, 114.83], [-3.385, 114.88]);
+
     const map = L.map(mapContainerRef.current, {
       center: KANTOR_DESA,
       zoom: 17,
       minZoom: 14,
       maxZoom: 20,
+      maxBounds: tileBounds,
+      maxBoundsViscosity: 0.9,
+      zoomControl: false,
     });
     mapInstanceRef.current = map;
 
-    // 2. Lapisan Dasar: Citra Satelit Offline
+    L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(map);
+
     L.tileLayer("/tiles/{z}/{x}/{y}.png", {
       minZoom: 14,
       maxZoom: 20,
-      attribution: "&copy; Desa Pekauman Ulu",
+      bounds: tileBounds,
+      attribution: "Citra Satelit &copy; Desa Pekauman Ulu",
     }).addTo(map);
 
-    // 3. Lapisan Mask Donat: Menggelapkan area di luar desa
     L.polygon([WORLD_OUTER_RING, VILLAGE_BOUNDARY], {
-      fillColor: "#0f172a",  // Gelap (slate-900)
-      fillOpacity: 0.65,     // 65% redup di luar desa
-      stroke: false,         // Tanpa garis luar dunia
-      interactive: false,    // Klik & geser mouse tembus ke peta
+      fillColor: "#F5F5F5",
+      fillOpacity: 0.8,
+      stroke: false,
+      interactive: false,
     }).addTo(map);
 
-    // 4. Garis Batas Desa: Clean & Flat Vector Outline
     L.polyline(VILLAGE_BOUNDARY, {
-      color: "#f59e0b",      // Kuning emas / Amber
-      weight: 2,             // Tebal garis 3px
-      opacity: 0.95,
-      dashArray: "6, 8",     // Gaya garis putus-putus batas administratif
+      color: "#171717",
+      weight: 2,
+      opacity: 0.85,
+      dashArray: "6, 6",
     }).addTo(map);
-
-    // 5. Pin Marker Kantor Desa
-    L.marker(KANTOR_DESA)
-      .addTo(map)
-      .bindPopup(
-        `<b>Kantor Desa Pekauman Ulu</b><br />
-         Kec. Martapura Timur, Kab. Banjar`
-      )
-      .openPopup();
 
     return () => {
       map.remove();
@@ -97,15 +92,8 @@ export default function PekaumanVillageMap() {
   }, []);
 
   return (
-    <div
-      ref={mapContainerRef}
-      style={{
-        width: "100%",
-        height: "650px",
-        borderRadius: "12px",
-        overflow: "hidden",
-        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-      }}
-    />
+    <div className="relative w-full h-full flex-1 overflow-hidden select-none bg-[#F5F5F5]">
+      <div ref={mapContainerRef} className="w-full h-full z-0" />
+    </div>
   );
 }
