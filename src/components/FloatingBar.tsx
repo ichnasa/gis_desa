@@ -2,6 +2,7 @@ import {
   MousePointer2,
   MapPin,
   Hexagon,
+  PenTool,
   Trash2,
   Undo2,
   Check,
@@ -30,9 +31,9 @@ export default function FloatingBar({
   pointCount = 0,
   measuredResult,
   drawingStyle = {
-    strokeColor: "#FFFFFF",
-    fillColor: "#FFFFFF",
-    fillOpacity: 0.3,
+    strokeColor: "#171717",
+    fillColor: "#171717",
+    fillOpacity: 0.25,
     strokeWeight: 2.5,
   },
   onUpdateDrawingStyle,
@@ -51,9 +52,15 @@ export default function FloatingBar({
         return "Klik pada peta untuk menaruh titik lokasi baru.";
       case "polygon":
         return pointCount === 0
-          ? "Klik pada peta untuk mulai menggambar area poligon."
+          ? "Klik pada peta untuk mulai menggambar area poligon (seperti pen tool)."
           : `Sudah ${pointCount} titik sudut. Klik dua kali atau klik Selesai untuk menutup poligon. ${
               measuredResult ? `(Luas: ${measuredResult})` : ""
+            }`;
+      case "polyline":
+        return pointCount === 0
+          ? "Klik pada peta untuk mulai menarik garis (seperti pen tool di Figma)."
+          : `Garis terhubung ${pointCount} titik. Klik dua kali atau klik Selesai untuk mengakhiri. ${
+              measuredResult ? `(Panjang: ${measuredResult})` : ""
             }`;
       case "eraser":
         return "Klik pada garis, poligon, atau marker di peta untuk menghapusnya.";
@@ -66,6 +73,7 @@ export default function FloatingBar({
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex flex-col items-center select-none pointer-events-auto">
+      {/* 1. Panduan Interaktif Ringan */}
       {guideText && (
         <div className="mb-2.5 px-4 py-2 bg-white text-[#171717] text-xs rounded-lg shadow-md border border-[#E5E5E5] flex items-center gap-2.5 transition">
           <span className="w-2 h-2 rounded-full bg-[#171717]" />
@@ -84,7 +92,9 @@ export default function FloatingBar({
         </div>
       )}
 
-      <div className="flex items-center gap-1.5 p-1.5 bg-white rounded-lg shadow-md border border-[#E5E5E5] text-[#171717] transition-all">
+      {/* 2. Floating Action Bar */}
+      <div id="tour-floating-bar" className="flex items-center gap-1.5 p-1.5 bg-white rounded-lg shadow-md border border-[#E5E5E5] text-[#171717] transition-all">
+        {/* Navigasi (Select) */}
         <button
           onClick={() => setMode("select")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
@@ -100,6 +110,7 @@ export default function FloatingBar({
 
         <div className="w-[1px] h-4 bg-[#E5E5E5] mx-0.5" />
 
+        {/* Tambah Titik Marker */}
         <button
           onClick={() => setMode("marker")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
@@ -115,6 +126,7 @@ export default function FloatingBar({
 
         <div className="w-[1px] h-4 bg-[#E5E5E5] mx-0.5" />
 
+        {/* Gambar Area (Polygon) */}
         <button
           onClick={() => setMode("polygon")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
@@ -128,8 +140,24 @@ export default function FloatingBar({
           <span className="hidden sm:inline">Gambar Area</span>
         </button>
 
+        {/* Pen Tool: Garis (Polyline) */}
+        <button
+          onClick={() => setMode("polyline")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            activeMode === "polyline"
+              ? "bg-[#171717] text-white shadow-sm"
+              : "text-[#737373] hover:text-[#171717] hover:bg-[#F5F5F5]"
+          }`}
+          title="Gambar garis rute / jalan (Pen Tool)"
+        >
+          <PenTool className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Garis (Pen)</span>
+        </button>
+
+        {/* COLOR PICKERS: Muncul dinamis sesuai tool yang aktif */}
         {activeMode === "polygon" && onUpdateDrawingStyle && (
           <div className="flex items-center gap-2 px-2.5 py-1 bg-[#F5F5F5] rounded-md border border-[#E5E5E5] text-xs">
+            {/* Outline Color Picker */}
             <label className="flex items-center gap-1 cursor-pointer" title="Warna Garis Luar (Outline)">
               <span className="text-[11px] font-medium text-[#737373]">Outline:</span>
               <input
@@ -142,6 +170,7 @@ export default function FloatingBar({
               />
             </label>
 
+            {/* Inner / Fill Color Picker */}
             <label className="flex items-center gap-1 cursor-pointer" title="Warna Isi (Inner/Fill)">
               <span className="text-[11px] font-medium text-[#737373]">Inner:</span>
               <input
@@ -156,8 +185,26 @@ export default function FloatingBar({
           </div>
         )}
 
+        {activeMode === "polyline" && onUpdateDrawingStyle && (
+          <div className="flex items-center gap-2 px-2.5 py-1 bg-[#F5F5F5] rounded-md border border-[#E5E5E5] text-xs">
+            {/* Line Color Picker */}
+            <label className="flex items-center gap-1 cursor-pointer" title="Warna Garis (Line Color)">
+              <span className="text-[11px] font-medium text-[#737373]">Warna Garis:</span>
+              <input
+                type="color"
+                value={drawingStyle.strokeColor}
+                onChange={(e) =>
+                  onUpdateDrawingStyle({ ...drawingStyle, strokeColor: e.target.value })
+                }
+                className="w-5 h-5 rounded cursor-pointer border border-[#E5E5E5] bg-transparent p-0"
+              />
+            </label>
+          </div>
+        )}
+
         <div className="w-[1px] h-4 bg-[#E5E5E5] mx-0.5" />
 
+        {/* Mode Hapus (Eraser) */}
         <button
           onClick={() => setMode(activeMode === "eraser" ? "select" : "eraser")}
           className={`p-1.5 rounded-md text-xs font-medium transition ${
@@ -170,6 +217,7 @@ export default function FloatingBar({
           <Trash2 className="w-3.5 h-3.5" />
         </button>
 
+        {/* Tombol Aksi saat Menggambar (Undo & Selesai) */}
         {(isDrawing || pointCount > 0) && (
           <>
             <div className="w-[1px] h-4 bg-[#E5E5E5] mx-0.5" />
@@ -198,6 +246,7 @@ export default function FloatingBar({
           </>
         )}
 
+        {/* Bersihkan semua sketsa */}
         {onClearAll && (
           <button
             onClick={onClearAll}
