@@ -19,6 +19,13 @@ function App() {
     setSelectedLocation(newLoc);
   };
 
+  const handleDeleteLocation = (id: string) => {
+    setLocations((prev) => prev.filter((loc) => loc.id !== id));
+    if (selectedLocation?.id === id) {
+      setSelectedLocation(null);
+    }
+  };
+
   const isDataPanelOpen = navTab === "data" || navTab === "add";
 
   return (
@@ -46,6 +53,7 @@ function App() {
           selectedLocation={selectedLocation}
           activeDrawMode={activeDrawMode}
           onAddLocation={handleAddLocation}
+          onDeleteLocation={handleDeleteLocation}
           onSelectLocation={(loc) => setSelectedLocation(loc)}
           onRequestNewPoint={(coords) => setNewPointModalCoords(coords)}
           onModeChange={(mode) => setActiveDrawMode(mode)}
@@ -62,6 +70,7 @@ function App() {
           locations={locations}
           onSelectLocation={(loc) => setSelectedLocation(loc)}
           onAddLocation={handleAddLocation}
+          onDeleteLocation={handleDeleteLocation}
           activeTab={navTab === "add" ? "form" : "list"}
           onChangeTab={(tab) => {
             if (tab === "form") setNavTab("add");

@@ -1,4 +1,4 @@
-import { MousePointer2, MapPin } from "lucide-react";
+import { MousePointer2, MapPin, Trash2 } from "lucide-react";
 import type { GisDrawMode } from "../types/gis";
 
 export interface FloatingBarProps {
@@ -18,6 +18,8 @@ export default function FloatingBar({
     switch (activeMode) {
       case "marker":
         return "Klik di mana saja pada peta untuk menaruh lokasi baru.";
+      case "eraser":
+        return "Klik pada marker di peta untuk menghapusnya.";
       default:
         return null;
     }
@@ -68,6 +70,20 @@ export default function FloatingBar({
         >
           <MapPin className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Tambah Titik</span>
+        </button>
+
+        <div className="w-[1px] h-4 bg-[#E5E5E5] mx-0.5" />
+
+        <button
+          onClick={() => setMode(activeMode === "eraser" ? "select" : "eraser")}
+          className={`p-1.5 rounded-md text-xs font-medium transition ${
+            activeMode === "eraser"
+              ? "bg-[#171717] text-white"
+              : "text-[#737373] hover:text-[#171717] hover:bg-[#F5F5F5]"
+          }`}
+          title="Klik marker di peta untuk menghapus"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

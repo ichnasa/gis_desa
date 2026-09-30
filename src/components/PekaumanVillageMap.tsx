@@ -74,6 +74,7 @@ export interface PekaumanVillageMapProps {
   selectedLocation?: GisLocation | null;
   activeDrawMode?: GisDrawMode;
   onAddLocation?: (loc: GisLocation) => void;
+  onDeleteLocation?: (id: string) => void;
   onSelectLocation?: (loc: GisLocation | null) => void;
   onRequestNewPoint?: (coords: { lat: number; lng: number }) => void;
   onModeChange?: (mode: GisDrawMode) => void;
@@ -83,6 +84,7 @@ export default function PekaumanVillageMap({
   locations = [],
   selectedLocation,
   activeDrawMode = "select",
+  onDeleteLocation,
   onSelectLocation,
   onRequestNewPoint,
   onModeChange,
@@ -148,7 +150,11 @@ export default function PekaumanVillageMap({
       const pinIcon = createSimpleMarker();
       const marker = L.marker([loc.lat, loc.lng], { icon: pinIcon });
       marker.on("click", () => {
-        if (onSelectLocation) onSelectLocation(loc);
+        if (activeDrawMode === "eraser") {
+          if (onDeleteLocation) onDeleteLocation(loc.id);
+        } else {
+          if (onSelectLocation) onSelectLocation(loc);
+        }
       });
       markersGroup.addLayer(marker);
     });
@@ -167,6 +173,8 @@ export default function PekaumanVillageMap({
 
     if (activeDrawMode === "marker") {
       container.style.cursor = "crosshair";
+    } else if (activeDrawMode === "eraser") {
+      container.style.cursor = "not-allowed";
     } else {
       container.style.cursor = "";
     }
