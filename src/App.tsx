@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "leaflet/dist/leaflet.css";
+import GuidedTour from "./components/GuidedTour";
 import Sidebar, { type SidebarTab } from "./components/Sidebar";
 import PekaumanVillageMap, { KANTOR_DESA } from "./components/PekaumanVillageMap";
 import FloatingBar from "./components/FloatingBar";
@@ -9,13 +10,23 @@ import NewPointModal from "./components/NewPointModal";
 import type { GisLocation, GisDrawMode, LayerVisibility, DrawingStyle } from "./types/gis";
 
 function App() {
+  // 1. Data Spasial Titik Lokasi
   const [locations, setLocations] = useState<GisLocation[]>(INITIAL_LOCATIONS);
   const [selectedLocation, setSelectedLocation] = useState<GisLocation | null>(null);
+
+  // 2. Mode Navigasi Tab Utama di Sidebar
   const [navTab, setNavTab] = useState<SidebarTab>("map");
-  const [activeDrawMode, setActiveDrawMode] = useState<GisDrawMode>("select");
+
+  // State khusus Guided Tour agar tidak terpengaruh perubahan navTab
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [isDataPanelOpenOverride, setIsDataPanelOpenOverride] = useState(false);
+  // State untuk edit titik dari popover peta ke sidebar kanan
   const [editingLocation, setEditingLocation] = useState<GisLocation | null>(null);
+
+  // State untuk modal input informasi saat titik baru ditambahkan via floating bar
   const [newPointModalCoords, setNewPointModalCoords] = useState<{ lat: number; lng: number } | null>(null);
 
+  // 3. Pengaturan Skala Ukuran Font UI (0.8 hingga 1.5)
   const [fontScale, setFontScale] = useState<number>(() => {
     try {
       const saved = localStorage.getItem("gis_font_scale");
@@ -31,6 +42,7 @@ function App() {
     return 1.0;
   });
 
+  // Terapkan ukuran font dinamis pada root dokumen secara real-time
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontScale * 100}%`;
     try {
@@ -40,6 +52,8 @@ function App() {
     }
   }, [fontScale]);
 
+  // 4. Mode Menggambar di Peta
+  const [activeDrawMode, setActiveDrawMode] = useState<GisDrawMode>("select");
   const [drawingState, setDrawingState] = useState<{
     isDrawing: boolean;
     pointCount: number;
@@ -50,13 +64,15 @@ function App() {
     measuredResult: null,
   });
 
+  // 5. Drawing Style State (Color Pickers untuk Outline dan Inner)
   const [drawingStyle, setDrawingStyle] = useState<DrawingStyle>({
-    strokeColor: "#FFFFFF",
-    fillColor: "#FFFFFF",
-    fillOpacity: 0.3,
+    strokeColor: "#171717",
+    fillColor: "#171717",
+    fillOpacity: 0.25,
     strokeWeight: 2.5,
   });
 
+  // 6. Visibilitas Layer Peta
   const [layerVisibility] = useState<LayerVisibility>({
     satelliteLayer: true,
     villageBoundary: true,
@@ -65,10 +81,12 @@ function App() {
     labels: true,
   });
 
+  // 7. Action Refs untuk FloatingBar (Undo, Finish, ClearAll)
   const finishDrawingRef = useRef<(() => void) | null>(null);
   const undoPointRef = useRef<(() => void) | null>(null);
   const clearAllRef = useRef<(() => void) | null>(null);
 
+  // Handler CRUD
   const handleAddLocation = (newLoc: GisLocation) => {
     setLocations((prev) => [newLoc, ...prev]);
     setSelectedLocation(newLoc);
@@ -96,9 +114,14 @@ function App() {
 
   return (
     <div className="flex flex-row h-screen w-screen overflow-hidden bg-[#F5F5F5] text-[#171717] font-sans antialiased">
+      {/* 1. Left Navigation Sidebar */}
       <Sidebar
-        activeTab={navTab}
+        activeTab={isTourOpen ? "guide" : navTab}
         onSelectTab={(tab) => {
+          if (tab === "guide") {
+            setIsTourOpen(true);
+            return;
+          }
           if (tab !== "add") setEditingLocation(null);
           setNavTab(tab);
         }}
@@ -116,6 +139,7 @@ function App() {
         }}
       />
 
+      {/* 2. Map Workspace (Main Area) */}
       <main className="flex-1 h-full relative overflow-hidden flex flex-col">
         <PekaumanVillageMap
           locations={locations}
@@ -130,7 +154,9 @@ function App() {
             setEditingLocation(loc);
             setNavTab("add");
           }}
-          onRequestNewPoint={(coords) => setNewPointModalCoords(coords)}
+          onRequestNewPoint={(coords) => {
+            setNewPointModalCoords(coords);
+          }}
           onModeChange={(mode) => setActiveDrawMode(mode)}
           onDrawingStateChange={(state) => setDrawingState(state)}
           finishDrawingRef={finishDrawingRef}
@@ -138,6 +164,7 @@ function App() {
           clearAllRef={clearAllRef}
         />
 
+        {/* Toolbar Gambar Melayang (FloatingBar di Bawah Tengah) */}
         <FloatingBar
           activeMode={activeDrawMode}
           onChangeMode={(mode) => setActiveDrawMode(mode)}
@@ -156,7 +183,8 @@ function App() {
         />
       </main>
 
-      {isDataPanelOpen && (
+      {/* 3. Panel Informasi & Data Lokasi (Buka saat tab Data / Tambah / Edit dipilih atau saat Guided Tour langkah ke-5) */}
+      {(isDataPanelOpen || isDataPanelOpenOverride) && (
         <CrudSidebar
           locations={locations}
           onSelectLocation={(loc) => setSelectedLocation(loc)}
@@ -175,11 +203,13 @@ function App() {
           }}
           onClose={() => {
             setEditingLocation(null);
+            setIsDataPanelOpenOverride(false);
             setNavTab("map");
           }}
         />
       )}
 
+      {/* 4. Modal Input Informasi Saat Tambah Titik via Floating Bar */}
       <NewPointModal
         isOpen={newPointModalCoords !== null}
         coords={newPointModalCoords}
@@ -190,11 +220,22 @@ function App() {
         }}
       />
 
+      {/* 5. Modal Pengaturan Skala Font UI (0.8 - 1.5) */}
       <SettingsModal
         isOpen={navTab === "settings"}
         onClose={() => setNavTab("map")}
         fontScale={fontScale}
         onFontScaleChange={(scale) => setFontScale(scale)}
+      />
+
+      {/* 6. Guided Tour Interaktif Langkah Demi Langkah */}
+      <GuidedTour
+        isOpen={isTourOpen}
+        onClose={() => {
+          setIsTourOpen(false);
+          setIsDataPanelOpenOverride(false);
+        }}
+        onEnsureSidebarOpen={() => setIsDataPanelOpenOverride(true)}
       />
     </div>
   );
