@@ -2,3 +2,5 @@
 - useRef create independes component instances each with its own .current to prevent duplicated id and collision that can cause crash
 - useEffect runs only after React commit changes to the real DOM
 - in react18+, react test component by mount, unmount, then mount
+- Pilihlah arsitektur sesuai skala beban kerja (workload-appropriate architecture)
+- 

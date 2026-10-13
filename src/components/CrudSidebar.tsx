@@ -29,318 +29,9 @@ interface CrudSidebarProps {
   onChangeTab?: (tab: "list" | "form") => void;
   editingLocation?: GisLocation | null;
   onCancelEdit?: () => void;
+  // false = pengunjung umum: hanya daftar, tanpa tambah/edit/hapus
+  canEdit?: boolean;
 }
-
-export const INITIAL_LOCATIONS: GisLocation[] = [
-  // Pemerintahan & Pelayanan Publik
-  {
-    id: "gmap-1",
-    name: "Kantor Desa Pekauman Ulu",
-    category: "pemerintahan",
-    lat: -3.398004,
-    lng: 114.844206,
-    address: "Jl. Martapura Lama RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Kantor pusat administrasi dan pelayanan resmi Desa Pekauman Ulu.",
-    createdAt: "2026-01-10",
-  },
-  {
-    id: "gmap-2",
-    name: "Aula Balai Desa Pekauman Ulu",
-    category: "pemerintahan",
-    lat: -3.398271,
-    lng: 114.844011,
-    address: "Jl. Martapura Lama",
-    rtRw: "RT 02 / RW 01",
-    description: "Gedung pertemuan warga dan musyawarah desa Pekauman Ulu.",
-    createdAt: "2026-01-10",
-  },
-  {
-    id: "gmap-3",
-    name: "Kantor Desa Pekauman",
-    category: "pemerintahan",
-    lat: -3.398850,
-    lng: 114.842660,
-    address: "Jl. Martapura Lama No. 24",
-    rtRw: "Pekauman",
-    description: "Kantor urusan pemerintahan wilayah Pekauman.",
-    createdAt: "2026-01-15",
-  },
-
-  // Fasilitas Kesehatan
-  {
-    id: "gmap-4",
-    name: "Puskesdes Pekauman Ulu",
-    category: "kesehatan",
-    lat: -3.397611,
-    lng: 114.843901,
-    address: "Jl. Martapura Lama RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Pos kesehatan desa melayani pemeriksaan kesehatan dasar warga.",
-    createdAt: "2026-02-14",
-  },
-  {
-    id: "gmap-5",
-    name: "Posyandu Balita & Posbindu Melati",
-    category: "kesehatan",
-    lat: -3.398200,
-    lng: 114.843600,
-    address: "Jl. Martapura Lama",
-    rtRw: "RT 02 / RW 01",
-    description: "Pelayanan kesehatan ibu, imunisasi balita, dan posbindu lansia.",
-    createdAt: "2026-02-14",
-  },
-
-  // Tempat Ibadah & Situs Religi
-  {
-    id: "gmap-6",
-    name: "Masjid Ibnul Amin Pekauman",
-    category: "ibadah",
-    lat: -3.399542,
-    lng: 114.843560,
-    address: "Jl. Martapura Lama",
-    rtRw: "RT 01 / RW 01",
-    description: "Masjid utama jemaah warga Pekauman untuk sholat Jumat dan kegiatan keagamaan.",
-    createdAt: "2026-01-12",
-  },
-  {
-    id: "gmap-7",
-    name: "Masjid At-Taqwa Pekauman",
-    category: "ibadah",
-    lat: -3.400311,
-    lng: 114.845959,
-    address: "Bantaran Sungai Martapura",
-    rtRw: "RT 01 / RW 01",
-    description: "Masjid tepi sungai tempat ibadah dan pengajian berkala warga pesisir.",
-    createdAt: "2026-01-15",
-  },
-  {
-    id: "gmap-8",
-    name: "Langgar An Nashir",
-    category: "ibadah",
-    lat: -3.395847,
-    lng: 114.844111,
-    address: "Jl. Martapura Lama Gang An Nashir",
-    rtRw: "RT 03 / RW 01",
-    description: "Musholla tempat sholat berjamaah warga Pekauman Ulu bagian utara.",
-    createdAt: "2026-01-18",
-  },
-  {
-    id: "gmap-9",
-    name: "Langgar Taqwallah",
-    category: "ibadah",
-    lat: -3.397611,
-    lng: 114.843901,
-    address: "Jl. Martapura Lama RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Musholla lingkungan RT 02 untuk ibadah harian warga.",
-    createdAt: "2026-01-20",
-  },
-  {
-    id: "gmap-10",
-    name: "Musholla Nidaul Khair",
-    category: "ibadah",
-    lat: -3.398527,
-    lng: 114.844414,
-    address: "Jl. Martapura Lama Gang Berkah",
-    rtRw: "RT 02 / RW 01",
-    description: "Tempat ibadah dekat dermaga dan pemukiman bantaran sungai.",
-    createdAt: "2026-01-22",
-  },
-  {
-    id: "gmap-11",
-    name: "Makam KH Abdul Wahab Sya'rani bin Salman",
-    category: "ibadah",
-    lat: -3.397474,
-    lng: 114.842406,
-    address: "Jl. Baburrahman No. 17",
-    rtRw: "RT 02 / RW 01",
-    description: "Makam ulama kharismatik Martapura, situs ziarah religi umat Islam.",
-    createdAt: "2026-01-05",
-  },
-
-  // Lembaga Pendidikan
-  {
-    id: "gmap-12",
-    name: "PAUD Harapan Bunda Pekauman Ulu",
-    category: "pendidikan",
-    lat: -3.395799,
-    lng: 114.843976,
-    address: "Jl. Martapura Lama",
-    rtRw: "RT 03 / RW 01",
-    description: "Pendidikan anak usia dini Desa Pekauman Ulu.",
-    createdAt: "2026-02-01",
-  },
-  {
-    id: "gmap-13",
-    name: "TPA Al-Munawarrah Pekauman Ulu",
-    category: "pendidikan",
-    lat: -3.398642,
-    lng: 114.844018,
-    address: "Jl. Martapura Lama No. 32",
-    rtRw: "RT 02 / RW 01",
-    description: "Taman Pendidikan Al-Qur'an dan bimbingan akhlak santri cilik.",
-    createdAt: "2026-02-05",
-  },
-  {
-    id: "gmap-14",
-    name: "Madrasah Al-Ikhlas Pekauman Ulu",
-    category: "pendidikan",
-    lat: -3.396800,
-    lng: 114.843800,
-    address: "Jl. K.H. Anang Sya'rani Arif Gang Madrasah",
-    rtRw: "RT 02 / RW 01",
-    description: "Lembaga pendidikan Islam dasar dan madrasah diniyah.",
-    createdAt: "2026-02-01",
-  },
-
-  // Sentra Ekonomi, UMKM, & Toko
-  {
-    id: "gmap-15",
-    name: "Dapur Bakery Hj. Enong Pekauman",
-    category: "ekonomi",
-    lat: -3.398617,
-    lng: 114.844571,
-    address: "Jl. Martapura Lama RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Sentra produksi kue dan oleh-oleh legendaris bolu gulung khas Martapura.",
-    createdAt: "2026-02-10",
-  },
-  {
-    id: "gmap-16",
-    name: "Pasar Kuliner Khas Banjar Pekauman Ulu",
-    category: "ekonomi",
-    lat: -3.398426,
-    lng: 114.844618,
-    address: "Jl. Martapura Lama RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Sentra jajanan pasar kue tradisional Banjar (wadai basah, bingka, cincin).",
-    createdAt: "2026-02-12",
-  },
-  {
-    id: "gmap-17",
-    name: "Warung Makan Acil Imar Pekauman",
-    category: "ekonomi",
-    lat: -3.396051,
-    lng: 114.843110,
-    address: "Jl. Martapura Lama No. 12",
-    rtRw: "RT 03 / RW 01",
-    description: "Warung makan menyajikan masakan khas Banjar dan lauk pauk harian.",
-    createdAt: "2026-02-15",
-  },
-  {
-    id: "gmap-18",
-    name: "Rocket Chicken Pekauman Martapura",
-    category: "ekonomi",
-    lat: -3.398649,
-    lng: 114.842521,
-    address: "Jl. Martapura Lama No. 40",
-    rtRw: "RT 01 / RW 01",
-    description: "Restoran kuliner cepat saji ayam goreng dan burger di jalan poros.",
-    createdAt: "2026-02-18",
-  },
-  {
-    id: "gmap-19",
-    name: "Roti Hapuk 23 Pekauman",
-    category: "ekonomi",
-    lat: -3.399018,
-    lng: 114.844551,
-    address: "Jl. Martapura Lama RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Produksi roti hangat dan aneka kue bakery rumahan warga.",
-    createdAt: "2026-02-20",
-  },
-  {
-    id: "gmap-20",
-    name: "Produksi KripKong (BSR).mm Bais",
-    category: "ekonomi",
-    lat: -3.396020,
-    lng: 114.842133,
-    address: "Jl. Babur Rahman No. 15",
-    rtRw: "RT 03 / RW 01",
-    description: "Usaha UMKM produksi keripik singkong gurih khas desa.",
-    createdAt: "2026-02-22",
-  },
-  {
-    id: "gmap-21",
-    name: "Toko Ramadhan Pekauman",
-    category: "ekonomi",
-    lat: -3.399885,
-    lng: 114.843755,
-    address: "Jl. Martapura Lama",
-    rtRw: "RT 01 / RW 01",
-    description: "Toko sembako dan kebutuhan harian rumah tangga.",
-    createdAt: "2026-02-24",
-  },
-  {
-    id: "gmap-22",
-    name: "Toko Iyaluna Hijab Pekauman",
-    category: "ekonomi",
-    lat: -3.398874,
-    lng: 114.842634,
-    address: "Jl. Martapura Lama No. 25",
-    rtRw: "RT 01 / RW 01",
-    description: "Toko busana muslimah, kerudung, gamis, dan aksesoris.",
-    createdAt: "2026-02-25",
-  },
-
-  // Fasilitas Umum & Jasa Transportasi
-  {
-    id: "gmap-23",
-    name: "Dermaga / Batang Pekauman Ulu",
-    category: "fasilitas",
-    lat: -3.399360,
-    lng: 114.845530,
-    address: "Bantaran Sungai Martapura",
-    rtRw: "RT 02 / RW 01",
-    description: "Dermaga tambatan perahu klotok dan aktivitas air warga bantaran sungai.",
-    createdAt: "2026-02-01",
-  },
-  {
-    id: "gmap-24",
-    name: "Dermaga Penyeberangan Klotok Sungai Martapura",
-    category: "fasilitas",
-    lat: -3.397100,
-    lng: 114.846200,
-    address: "Sungai Martapura RT 02",
-    rtRw: "RT 02 / RW 01",
-    description: "Akses penyeberangan perahu klotok warga menuju seberang tepian sungai.",
-    createdAt: "2026-02-10",
-  },
-  {
-    id: "gmap-25",
-    name: "Bengkel Habibi Motor",
-    category: "fasilitas",
-    lat: -3.396527,
-    lng: 114.845699,
-    address: "Jl. Martapura Lama Gang Sejahtera",
-    rtRw: "RT 03 / RW 01",
-    description: "Bengkel servis motor, ganti oli, dan perbaikan kendaraan roda dua.",
-    createdAt: "2026-02-15",
-  },
-  {
-    id: "gmap-26",
-    name: "Bengkel Gondrong Lengo",
-    category: "fasilitas",
-    lat: -3.401299,
-    lng: 114.845328,
-    address: "Jl. Martapura Lama RT 01",
-    rtRw: "RT 01 / RW 01",
-    description: "Bengkel perawatan motor dan tambal ban warga.",
-    createdAt: "2026-02-18",
-  },
-  {
-    id: "gmap-27",
-    name: "Nizam Zain Bersaudara",
-    category: "fasilitas",
-    lat: -3.400630,
-    lng: 114.845789,
-    address: "Bantaran Sungai Martapura",
-    rtRw: "RT 01 / RW 01",
-    description: "Jasa perlengkapan dan usaha penunjang aktivitas warga desa.",
-    createdAt: "2026-02-20",
-  },
-];
 
 export const CATEGORY_ICONS_CONFIG: Record<
   GisCategory,
@@ -365,12 +56,13 @@ export default function CrudSidebar({
   onChangeTab,
   editingLocation,
   onCancelEdit,
+  canEdit = true,
 }: CrudSidebarProps) {
-  const [internalLocations, setInternalLocations] = useState<GisLocation[]>(INITIAL_LOCATIONS);
+  const [internalLocations, setInternalLocations] = useState<GisLocation[]>([]);
   const locations = externalLocations ?? internalLocations;
 
   const [internalTab, setInternalTab] = useState<"list" | "form">("list");
-  const activeTab = externalTab ?? internalTab;
+  const activeTab = canEdit ? externalTab ?? internalTab : "list";
 
   const setActiveTab = (tab: "list" | "form") => {
     if (onChangeTab) onChangeTab(tab);
@@ -614,16 +306,18 @@ export default function CrudSidebar({
           </span>
         </button>
 
-        <button
-          onClick={handleOpenAddForm}
-          className={`py-2.5 px-3 text-center border-b-2 transition flex items-center gap-1.5 ${
-            activeTab === "form"
-              ? "border-[#171717] text-[#171717] bg-white font-semibold"
-              : "border-transparent text-[#737373] hover:text-[#171717]"
-          }`}
-        >
-          <span>{editingLocationId ? "Edit Lokasi" : "Tambah Lokasi"}</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={handleOpenAddForm}
+            className={`py-2.5 px-3 text-center border-b-2 transition flex items-center gap-1.5 ${
+              activeTab === "form"
+                ? "border-[#171717] text-[#171717] bg-white font-semibold"
+                : "border-transparent text-[#737373] hover:text-[#171717]"
+            }`}
+          >
+            <span>{editingLocationId ? "Edit Lokasi" : "Tambah Lokasi"}</span>
+          </button>
+        )}
       </div>
 
       {/* 3. Konten Panel */}
@@ -691,13 +385,15 @@ export default function CrudSidebar({
                 <p className="text-xs text-[#737373] mt-1 max-w-xs mx-auto">
                   Belum ada data yang cocok. Coba gunakan nama lokasi lain atau tambah lokasi baru.
                 </p>
-                <button
-                  onClick={handleOpenAddForm}
-                  className="mt-4 px-3 py-1.5 bg-[#171717] text-white text-xs font-medium rounded-md hover:bg-[#262626] transition inline-flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Lokasi</span>
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={handleOpenAddForm}
+                    className="mt-4 px-3 py-1.5 bg-[#171717] text-white text-xs font-medium rounded-md hover:bg-[#262626] transition inline-flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Lokasi</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -724,22 +420,24 @@ export default function CrudSidebar({
                         </div>
 
                         {/* Tombol Aksi */}
-                        <div className="flex items-center gap-1 text-[#737373]">
-                          <button
-                            onClick={() => handleOpenEditForm(loc)}
-                            className="p-1.5 hover:text-[#171717] rounded hover:bg-[#F5F5F5]"
-                            title="Edit"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirmId(loc.id)}
-                            className="p-1.5 hover:text-[#171717] rounded hover:bg-[#F5F5F5]"
-                            title="Hapus"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {canEdit && (
+                          <div className="flex items-center gap-1 text-[#737373]">
+                            <button
+                              onClick={() => handleOpenEditForm(loc)}
+                              className="p-1.5 hover:text-[#171717] rounded hover:bg-[#F5F5F5]"
+                              title="Edit"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirmId(loc.id)}
+                              className="p-1.5 hover:text-[#171717] rounded hover:bg-[#F5F5F5]"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <p className="text-xs text-[#737373] mt-1 line-clamp-1">{loc.address}</p>
@@ -942,13 +640,15 @@ export default function CrudSidebar({
       {/* 4. Footer Panel */}
       <footer className="p-3 border-t border-[#E5E5E5] text-xs text-[#737373] flex items-center justify-between bg-[#F5F5F5]">
         <span>Desa Pekauman Ulu</span>
-        <button
-          onClick={handleOpenAddForm}
-          className="text-[#171717] font-medium hover:underline flex items-center gap-1"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Tambah Lokasi</span>
-        </button>
+        {canEdit && (
+          <button
+            onClick={handleOpenAddForm}
+            className="text-[#171717] font-medium hover:underline flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Lokasi</span>
+          </button>
+        )}
       </footer>
     </aside>
   );

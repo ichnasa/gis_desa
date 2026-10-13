@@ -72,7 +72,7 @@ export default function FloatingBar({
   const guideText = getGuideMessage();
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex flex-col items-center select-none pointer-events-auto">
+    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex flex-col items-center select-none pointer-events-auto">
       {/* 1. Panduan Interaktif Ringan */}
       {guideText && (
         <div className="mb-2.5 px-4 py-2 bg-white text-[#171717] text-xs rounded-lg shadow-md border border-[#E5E5E5] flex items-center gap-2.5 transition">
