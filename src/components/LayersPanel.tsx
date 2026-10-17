@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MOBILE_QUERY } from "../lib/useMediaQuery";
 import {
   Layers,
   ChevronDown,
@@ -73,11 +74,12 @@ export default function LayersPanel({
   onZoomToLayer,
   onRemove,
 }: LayersPanelProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  // Di HP panel tertutup dulu supaya peta tidak tertutup
+  const [isOpen, setIsOpen] = useState(() => !window.matchMedia(MOBILE_QUERY).matches);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
-    <div id="tour-layers-panel" className="absolute top-16 left-4 z-[500] w-72 sm:w-80 bg-white rounded-lg shadow-sm border border-[#E5E5E5] text-[#171717] select-none overflow-hidden">
+    <div id="tour-layers-panel" className="absolute top-16 left-4 right-16 z-[500] md:right-auto md:w-80 bg-white rounded-lg shadow-sm border border-[#E5E5E5] text-[#171717] select-none overflow-hidden">
       <button
         onClick={() => setIsOpen((v) => !v)}
         className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#F5F5F5] transition"
@@ -129,7 +131,7 @@ export default function LayersPanel({
                   {isLoading && <Loader2 className="w-3.5 h-3.5 text-[#737373] animate-spin" />}
 
                   {advanced && !isLoading && (
-                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition">
+                    <div className="flex items-center transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
                       <button
                         onClick={() => onZoomToLayer(layer.id)}
                         className="p-1 rounded text-[#737373] hover:text-[#171717] hover:bg-white"

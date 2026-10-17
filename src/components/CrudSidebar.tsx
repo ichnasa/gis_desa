@@ -262,13 +262,14 @@ export default function CrudSidebar({
   return (
     <aside
       id="tour-crud-panel"
-      style={{ width: `${sidebarWidth}px` }}
-      className="relative h-full flex flex-col bg-white border-l border-[#E5E5E5] shadow-sm select-none z-20 flex-shrink-0 text-[#171717]"
+      // HP: layar penuh di atas peta; desktop: panel kanan dengan lebar yang bisa diatur
+      style={{ "--panel-width": `${sidebarWidth}px` } as React.CSSProperties}
+      className="fixed inset-0 z-[1550] w-full h-full flex flex-col bg-white border-l border-[#E5E5E5] shadow-sm select-none flex-shrink-0 text-[#171717] md:relative md:inset-auto md:z-20 md:w-(--panel-width)"
     >
       {/* Handle Penggeser Lebar Sidebar (Resize Handle) */}
       <div
         onMouseDown={handleMouseDownResize}
-        className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-40 group flex items-center justify-center select-none"
+        className="absolute -left-1.5 top-0 bottom-0 w-3 cursor-col-resize z-40 group hidden md:flex items-center justify-center select-none"
         title="Geser untuk mengubah lebar panel (Min: 300px, Max: 560px)"
       >
         <div className="w-[3px] h-12 rounded-full bg-[#E5E5E5] group-hover:bg-[#171717] group-active:bg-[#171717] transition-colors" />

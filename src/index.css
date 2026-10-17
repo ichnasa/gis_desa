@@ -229,3 +229,18 @@
 @media (prefers-reduced-motion: reduce) {
   .marker-moving > div > div { animation: none; }
 }
+
+/* Layar HP: atribusi peta lebih ringkas supaya tidak menutupi kontrol */
+@media (max-width: 767px) {
+  .leaflet-control-attribution {
+    max-width: 60vw;
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .leaflet-control-attribution:hover,
+  .leaflet-control-attribution:active {
+    white-space: normal;
+  }
+}

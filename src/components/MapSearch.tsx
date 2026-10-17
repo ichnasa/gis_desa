@@ -20,7 +20,7 @@ export default function MapSearch({ locations, onSelect }: MapSearchProps) {
   }, [text, locations]);
 
   return (
-    <div id="tour-search-bar" className="absolute top-4 left-4 z-[510] w-72 sm:w-80">
+    <div id="tour-search-bar" className="absolute top-4 left-16 right-16 z-[510] md:left-4 md:right-auto md:w-80">
       <div className="relative bg-white rounded-lg shadow-sm border border-[#E5E5E5]">
         <input
           type="text"

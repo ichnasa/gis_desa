@@ -48,8 +48,8 @@ export default function StatusBar({ map }: StatusBarProps) {
   }
 
   return (
-    <div className="h-7 flex-shrink-0 flex items-center gap-4 px-3 bg-white border-t border-[#E5E5E5] text-[11px] text-[#737373] select-none">
-      <div className="flex items-center gap-1.5 min-w-[230px]">
+    <div className="h-7 flex-shrink-0 flex items-center gap-3 sm:gap-4 px-3 whitespace-nowrap overflow-hidden bg-white border-t border-[#E5E5E5] text-[11px] text-[#737373] select-none">
+      <div className="flex items-center gap-1.5 sm:min-w-[230px]">
         <span>Koordinat</span>
         <span className="font-mono text-[#171717]">{coordText}</span>
       </div>
@@ -59,7 +59,7 @@ export default function StatusBar({ map }: StatusBarProps) {
           {view ? `1:${Math.round(mapScale(view.lat, view.zoom)).toLocaleString("id-ID")}` : "–"}
         </span>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="hidden sm:flex items-center gap-1.5">
         <span>Zoom</span>
         <span className="font-mono text-[#171717]">{view ? view.zoom.toFixed(1) : "–"}</span>
       </div>

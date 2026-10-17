@@ -87,7 +87,11 @@ export default function IdentifyPanel({
   const featureId = String(feature.id ?? props.fid ?? "");
 
   return (
-    <div className="absolute top-4 right-16 z-[500] w-80 max-h-[calc(100%-2rem)] flex flex-col bg-white rounded-lg shadow-md border border-[#E5E5E5] text-[#171717]">
+    <div className="absolute inset-x-0 bottom-0 z-[1100] max-h-[60%] flex flex-col bg-white rounded-t-2xl shadow-[0_-8px_24px_rgba(0,0,0,0.15)] border border-[#E5E5E5] text-[#171717] animate-fadeIn md:inset-x-auto md:bottom-auto md:top-4 md:right-16 md:z-[500] md:w-80 md:max-h-[calc(100%-2rem)] md:rounded-lg md:shadow-md">
+      {/* Pegangan bottom sheet (HP) */}
+      <div className="flex justify-center pt-2 md:hidden" aria-hidden="true">
+        <span className="w-10 h-1 rounded-full bg-[#D4D4D4]" />
+      </div>
       <div className="flex items-start justify-between gap-2 px-3 py-2.5 border-b border-[#E5E5E5]">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-[#737373]">

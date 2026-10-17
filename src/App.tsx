@@ -19,6 +19,8 @@ import LoginModal from "./components/LoginModal";
 import Toast, { type ToastMessage } from "./components/Toast";
 import MoveLocationBar from "./components/MoveLocationBar";
 import { distanceMeters, pointInGeometry } from "./lib/geo";
+import { useIsMobile } from "./lib/useMediaQuery";
+import { Menu } from "lucide-react";
 import type { GisLocation, GisDrawMode, DrawingStyle, GisLayer, IdentifiedFeature } from "./types/gis";
 import {
   INITIAL_LAYERS,
@@ -86,6 +88,9 @@ function App() {
 
   // 2. Mode Navigasi Tab Utama di Sidebar
   const [navTab, setNavTab] = useState<SidebarTab>("map");
+  // Layar HP: sidebar berupa drawer
+  const isMobile = useIsMobile();
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   // State khusus Guided Tour agar tidak terpengaruh perubahan navTab
   const [isTourOpen, setIsTourOpen] = useState(false);
@@ -426,11 +431,12 @@ function App() {
   const isDataPanelOpen = navTab === "data" || navTab === "add";
 
   return (
-    <div className="flex flex-row h-screen w-screen overflow-hidden bg-[#F5F5F5] text-[#171717] font-sans antialiased">
+    <div className="flex flex-row h-dvh w-full overflow-hidden bg-[#F5F5F5] text-[#171717] font-sans antialiased">
       {/* 1. Left Navigation Sidebar */}
       <Sidebar
         activeTab={isTourOpen ? "guide" : navTab}
         onSelectTab={(tab) => {
+          setIsNavOpen(false);
           if (tab === "guide") {
             setIsTourOpen(true);
             return;
@@ -443,8 +449,13 @@ function App() {
         advancedMode={advancedMode}
         onToggleAdvancedMode={() => setAdvancedMode((v) => !v)}
         operatorEmail={session?.user.email ?? null}
-        onLogin={() => setIsLoginOpen(true)}
+        onLogin={() => {
+          setIsNavOpen(false);
+          setIsLoginOpen(true);
+        }}
         onLogout={handleLogout}
+        isMobileOpen={isNavOpen}
+        onCloseMobile={() => setIsNavOpen(false)}
       />
 
       {/* 2. Map Workspace (Main Area) */}
@@ -461,6 +472,17 @@ function App() {
             movingPosition={moving?.current ?? null}
             onMovePosition={(current) => setMoving((prev) => (prev ? { ...prev, current } : prev))}
           />
+
+          {/* Tombol menu (HP) */}
+          <button
+            id="tour-menu-button"
+            onClick={() => setIsNavOpen(true)}
+            className="absolute top-4 left-4 z-[510] w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm border border-[#E5E5E5] text-[#171717] md:hidden"
+            title="Buka menu"
+            aria-label="Buka menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
           <MapSearch locations={locations} onSelect={selectLocation} />
 
@@ -532,7 +554,7 @@ function App() {
           {loadError && (
             <div
               role="alert"
-              className="absolute top-4 left-1/2 -translate-x-1/2 z-[1500] max-w-md flex items-start gap-3 px-4 py-3 bg-white border border-[#F5D0CE] rounded-lg shadow-md text-xs"
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-[1500] w-[calc(100%-2rem)] sm:w-auto max-w-md flex items-start gap-3 px-4 py-3 bg-white border border-[#F5D0CE] rounded-lg shadow-md text-xs"
             >
               <div className="flex-1 text-[#D44C47] leading-relaxed">{loadError}</div>
               <button
@@ -575,7 +597,14 @@ function App() {
       {(isDataPanelOpen || isDataPanelOpenOverride) && (
         <CrudSidebar
           locations={locations}
-          onSelectLocation={selectLocation}
+          onSelectLocation={(loc) => {
+            selectLocation(loc);
+            // Di HP panel menutupi peta: tutup supaya lokasinya terlihat
+            if (isMobile) {
+              setIsDataPanelOpenOverride(false);
+              setNavTab("map");
+            }
+          }}
           onAddLocation={handleAddLocation}
           onUpdateLocation={handleUpdateLocation}
           onDeleteLocation={handleDeleteLocation}

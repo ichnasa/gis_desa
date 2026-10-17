@@ -77,10 +77,10 @@ export default function ImportModal({ isOpen, onClose, villageBounds, existingCo
   const visibleRows = result ? result.rows.filter((r) => filter === "all" || r.status === filter) : [];
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 select-none">
-      <div className="bg-white border border-[#E5E5E5] rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col text-[#171717]">
+    <div className="fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 select-none">
+      <div className="bg-white border border-[#E5E5E5] rounded-xl shadow-xl w-full max-w-3xl max-h-[95dvh] sm:max-h-[90dvh] flex flex-col text-[#171717]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E5E5E5] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[#E5E5E5] px-4 sm:px-6 py-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#171717] text-white flex items-center justify-center">
               <FileSpreadsheet className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function ImportModal({ isOpen, onClose, villageBounds, existingCo
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4">
           {/* 1. Pilih File */}
           {!result && (
             <>
@@ -187,7 +187,7 @@ export default function ImportModal({ isOpen, onClose, villageBounds, existingCo
                 </button>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {(
                   [
                     ["all", "Semua", result.rows.length, "text-[#171717]"],
@@ -294,7 +294,7 @@ export default function ImportModal({ isOpen, onClose, villageBounds, existingCo
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-[#E5E5E5]">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-[#E5E5E5]">
           <div className="text-xs text-[#737373]">
             {counts && counts.umkm > 0 && `${counts.umkm} rumah memiliki UMKM (ditandai oranye di peta)`}
           </div>

@@ -40,7 +40,8 @@ export interface GuidedTourProps {
 type Placement = "center" | "right" | "left" | "bottom" | "top";
 
 interface TourStep {
-  targetId?: string;
+  // Beberapa ID: dipakai yang pertama terlihat (mis. sidebar di desktop, tombol menu di HP)
+  targetId?: string | string[];
   badge: string;
   title: string;
   description: ReactNode;
@@ -71,6 +72,13 @@ function Label({ children }: { children: ReactNode }) {
 
 const isInViewport = (r: DOMRect) =>
   r.width > 0 && r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth;
+
+function resolveTarget(targetId: TourStep["targetId"]): HTMLElement | null {
+  if (!targetId) return null;
+  const ids = Array.isArray(targetId) ? targetId : [targetId];
+  const elements = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null);
+  return elements.find((el) => isInViewport(el.getBoundingClientRect())) ?? elements[0] ?? null;
+}
 
 const findButtonByText = (root: HTMLElement, text: string) =>
   [...root.querySelectorAll("button")].find((b) => b.textContent?.includes(text)) ?? null;
@@ -171,7 +179,7 @@ const TOUR_STEPS: TourStep[] = [
     title: "Klik untuk melihat keterangan",
     description: (
       <>
-        Klik <Label>titik, bangunan, atau jalan</Label> di peta. Keterangannya muncul di pojok kanan atas. Untuk rumah warga
+        Klik <Label>titik, bangunan, atau jalan</Label> di peta. Keterangannya muncul di panel informasi. Untuk rumah warga
         ada tombol <Label>Rute Google Maps</Label> untuk petunjuk arah dari lokasi Anda.
       </>
     ),
@@ -200,7 +208,7 @@ const TOUR_STEPS: TourStep[] = [
     operatorOnly: true,
   },
   {
-    targetId: "tour-sidebar",
+    targetId: ["tour-sidebar", "tour-menu-button"],
     badge: "Menu",
     title: "Menu utama",
     description: (
@@ -221,7 +229,13 @@ const TOUR_STEPS: TourStep[] = [
     ),
     icon: Menu,
     placement: "right",
-    pointer: (el) => findButtonByText(el, "Masuk Operator") ?? findButtonByText(el, "Import Data"),
+    tip: (
+      <>
+        Di HP, menu dibuka lewat tombol <KeyIcon icon={Menu} /> di kiri atas.
+      </>
+    ),
+    pointer: (el) =>
+      el.id === "tour-menu-button" ? el : findButtonByText(el, "Masuk Operator") ?? findButtonByText(el, "Import Data"),
   },
   {
     targetId: "tour-crud-panel",
@@ -234,21 +248,21 @@ const TOUR_STEPS: TourStep[] = [
     needsDataPanel: true,
   },
   {
-    targetId: "tour-advanced-toggle",
+    targetId: ["tour-advanced-toggle", "tour-menu-button"],
     badge: "Mode Lanjutan",
     title: "Untuk petugas yang sudah mahir",
     description:
       "Mode Lanjutan menampilkan alat tambahan seperti koordinat, skala peta, dan data lengkap. Kalau belum perlu, biarkan mati. Semua fungsi utama tetap bisa dipakai.",
     icon: SlidersHorizontal,
     placement: "right",
-    pointer: (el) => el.querySelector("[role=switch] > span"),
+    pointer: (el) => (el.id === "tour-menu-button" ? el : el.querySelector("[role=switch] > span")),
   },
   {
     badge: "Selesai",
     title: "Anda siap menggunakan peta!",
     description: (
       <>
-        Panduan ini bisa dibuka lagi kapan saja lewat menu <Label>Panduan</Label> di sebelah kiri.
+        Panduan ini bisa dibuka lagi kapan saja lewat menu <Label>Panduan</Label>.
       </>
     ),
     icon: PartyPopper,
@@ -325,7 +339,7 @@ function TourOverlay({ onClose, onEnsureSidebarOpen, isOperator = false }: Omit<
   useEffect(() => {
     let frame = 0;
     const measure = () => {
-      const el = step.targetId ? document.getElementById(step.targetId) : null;
+      const el = resolveTarget(step.targetId);
       const target = el ? el.getBoundingClientRect() : null;
       let pointer: DOMRect | null = null;
       if (el && step.pointer) {
@@ -344,7 +358,7 @@ function TourOverlay({ onClose, onEnsureSidebarOpen, isOperator = false }: Omit<
     const timer = setTimeout(schedule, 400);
     window.addEventListener("resize", schedule);
     const observer = new ResizeObserver(schedule);
-    const el = step.targetId ? document.getElementById(step.targetId) : null;
+    const el = resolveTarget(step.targetId);
     if (el) observer.observe(el);
     return () => {
       cancelAnimationFrame(frame);
